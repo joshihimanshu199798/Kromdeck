@@ -15,25 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Compare
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.Widgets
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Compare
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.Widgets
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -54,8 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,18 +50,18 @@ import com.example.model.toKromdeckTheme
 import com.example.ui.components.HexColorPickerDialog
 import com.example.ui.components.ImageExtractorDialog
 import com.example.ui.components.KromdeckHeader
+import com.example.ui.components.KromdeckNavigationIcons
+import com.example.ui.components.PillarNavIcon
 import com.example.ui.components.ShareBackupDialog
 import com.example.ui.screens.CompareTournamentScreen
 import com.example.ui.screens.ComponentsScreen
 import com.example.ui.screens.DiscoverScreen
-import com.example.ui.screens.LandingPageScreen
+import com.example.ui.screens.LandingView
 import com.example.ui.screens.SavedScreen
 import com.example.ui.screens.StudioView
 import com.example.ui.screens.TokensScaleScreen
-import com.example.ui.theme.KromdeckCoral
+import com.example.ui.theme.KromdeckAmber
 import com.example.ui.theme.KromdeckCreamCanvas
-import com.example.ui.theme.KromdeckIndigo
-import com.example.ui.theme.KromdeckIndigoTint
 import com.example.ui.theme.KromdeckMutedInk
 import com.example.ui.theme.KromdeckPureSurface
 import com.example.ui.theme.KromdeckSlateInk
@@ -209,7 +190,7 @@ fun KromdeckApp(
           ) { target ->
             when (target) {
               ActiveScreen.Landing ->
-                LandingPageScreen(
+                LandingView(
                   onNavigateToMode = navigateToWorkspace,
                   onOpenImageExtractor = {
                     showLandingPage = false
@@ -396,32 +377,34 @@ private fun KromdeckNavigationBar(
       tonalElevation = 0.dp,
       modifier = Modifier.testTag("kromdeck_navigation_bar"),
     ) {
-      KromdeckMode.entries.forEach { mode ->
-        val selected = mode == selectedMode
-        val navLabel = shortNavLabel(mode)
+      KromdeckNavigationIcons.allPillars.forEach { spec ->
+        val selected = spec.mode == selectedMode
+        val iconTint = if (spec.accentColor == KromdeckAmber) KromdeckSlateInk else spec.accentColor
         NavigationBarItem(
           selected = selected,
-          onClick = { onSelectMode(mode) },
-          modifier = Modifier.testTag("nav_bar_${mode.name.lowercase()}"),
+          onClick = { onSelectMode(spec.mode) },
+          modifier = Modifier.testTag("nav_bar_${spec.mode.name.lowercase()}"),
           icon = {
-            NavDestinationIcon(mode = mode, selected = selected, savedCount = savedCount)
+            PillarNavIcon(mode = spec.mode, selected = selected, savedCount = savedCount)
           },
           label = {
             Text(
-              text = navLabel,
+              text = spec.navLabel,
               style = MaterialTheme.typography.labelSmall,
-              fontSize = 10.sp,
+              fontSize = 9.sp,
+              letterSpacing = (-0.2).sp,
               fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
               maxLines = 1,
+              softWrap = false,
               overflow = TextOverflow.Ellipsis,
             )
           },
           alwaysShowLabel = true,
           colors =
             NavigationBarItemDefaults.colors(
-              selectedIconColor = KromdeckIndigo,
+              selectedIconColor = iconTint,
               selectedTextColor = KromdeckSlateInk,
-              indicatorColor = KromdeckIndigoTint,
+              indicatorColor = spec.tintColor,
               unselectedIconColor = KromdeckMutedInk,
               unselectedTextColor = KromdeckMutedInk,
             ),
@@ -443,18 +426,19 @@ private fun KromdeckNavigationRail(
       contentColor = KromdeckSlateInk,
       modifier = Modifier.statusBarsPadding().testTag("kromdeck_navigation_rail"),
     ) {
-      KromdeckMode.entries.forEach { mode ->
-        val selected = mode == selectedMode
+      KromdeckNavigationIcons.allPillars.forEach { spec ->
+        val selected = spec.mode == selectedMode
+        val iconTint = if (spec.accentColor == KromdeckAmber) KromdeckSlateInk else spec.accentColor
         NavigationRailItem(
           selected = selected,
-          onClick = { onSelectMode(mode) },
-          modifier = Modifier.testTag("nav_rail_${mode.name.lowercase()}"),
+          onClick = { onSelectMode(spec.mode) },
+          modifier = Modifier.testTag("nav_rail_${spec.mode.name.lowercase()}"),
           icon = {
-            NavDestinationIcon(mode = mode, selected = selected, savedCount = savedCount)
+            PillarNavIcon(mode = spec.mode, selected = selected, savedCount = savedCount)
           },
           label = {
             Text(
-              text = shortNavLabel(mode),
+              text = spec.navLabel,
               style = MaterialTheme.typography.labelSmall,
               fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
               maxLines = 1,
@@ -462,9 +446,9 @@ private fun KromdeckNavigationRail(
           },
           colors =
             NavigationRailItemDefaults.colors(
-              selectedIconColor = KromdeckIndigo,
+              selectedIconColor = iconTint,
               selectedTextColor = KromdeckSlateInk,
-              indicatorColor = KromdeckIndigoTint,
+              indicatorColor = spec.tintColor,
               unselectedIconColor = KromdeckMutedInk,
               unselectedTextColor = KromdeckMutedInk,
             ),
@@ -474,45 +458,3 @@ private fun KromdeckNavigationRail(
     VerticalDivider(thickness = 2.dp, color = KromdeckSlateInk)
   }
 }
-
-@Composable
-private fun NavDestinationIcon(
-  mode: KromdeckMode,
-  selected: Boolean,
-  savedCount: Int,
-) {
-  val iconVector = navModeIcon(mode, selected)
-  if (mode == KromdeckMode.SAVED && savedCount > 0) {
-    BadgedBox(
-      badge = {
-        Badge(containerColor = KromdeckCoral, contentColor = Color.White) {
-          Text(savedCount.toString(), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold)
-        }
-      },
-    ) {
-      Icon(iconVector, contentDescription = mode.label, modifier = Modifier.size(22.dp))
-    }
-  } else {
-    Icon(iconVector, contentDescription = mode.label, modifier = Modifier.size(22.dp))
-  }
-}
-
-private fun shortNavLabel(mode: KromdeckMode): String =
-  when (mode) {
-    KromdeckMode.DISCOVER -> "Discover"
-    KromdeckMode.STUDIO -> "Studio"
-    KromdeckMode.COMPARE -> "Compare"
-    KromdeckMode.COMPONENTS -> "UI Kit"
-    KromdeckMode.TOKENS -> "Tokens"
-    KromdeckMode.SAVED -> "Saved"
-  }
-
-private fun navModeIcon(mode: KromdeckMode, selected: Boolean): ImageVector =
-  when (mode) {
-    KromdeckMode.DISCOVER -> if (selected) Icons.Filled.Explore else Icons.Outlined.Explore
-    KromdeckMode.STUDIO -> if (selected) Icons.Filled.Tune else Icons.Outlined.Tune
-    KromdeckMode.COMPARE -> if (selected) Icons.Filled.Compare else Icons.Outlined.Compare
-    KromdeckMode.COMPONENTS -> if (selected) Icons.Filled.Widgets else Icons.Outlined.Widgets
-    KromdeckMode.TOKENS -> if (selected) Icons.Filled.Palette else Icons.Outlined.Palette
-    KromdeckMode.SAVED -> if (selected) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder
-  }

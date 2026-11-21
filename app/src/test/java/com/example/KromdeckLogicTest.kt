@@ -187,4 +187,22 @@ class KromdeckLogicTest {
     assertEquals(90f, deck.gradientAngle)
     assertEquals(theme, deck.toKromdeckTheme())
   }
+
+  @Test
+  fun navigationPillarsCoverAllSixModesWithDistinctDescriptiveIcons() {
+    val pillars = com.example.ui.components.KromdeckNavigationIcons.allPillars
+    assertEquals(com.example.model.KromdeckMode.entries.size, pillars.size)
+    assertEquals(
+      listOf("Discover", "Studio", "Compare", "Components", "Tokens", "Saved"),
+      pillars.map { it.navLabel },
+    )
+    assertEquals(6, pillars.map { it.filledIcon }.distinct().size)
+    assertEquals(6, pillars.map { it.outlinedIcon }.distinct().size)
+    pillars.forEach { spec ->
+      assertTrue(spec.summary.isNotBlank())
+      assertTrue(spec.iconContentDescription.isNotBlank())
+      assertTrue(spec.keyFunctions.isNotEmpty())
+      assertEquals(spec, com.example.ui.components.KromdeckNavigationIcons.forMode(spec.mode))
+    }
+  }
 }
