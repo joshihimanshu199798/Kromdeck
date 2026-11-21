@@ -1,0 +1,6 @@
+{
+  "name": "Kromdeck",
+  "description": "Interactive UI Theme, Design System & Decision Playground with live templates, WCAG guard, A/B tournament, and multi-format token export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
