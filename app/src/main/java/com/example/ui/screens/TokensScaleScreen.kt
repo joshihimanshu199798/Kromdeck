@@ -34,8 +34,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.ExportFormat
 import com.example.model.TonalShade
 import com.example.ui.components.TactileCard
+import com.example.ui.components.TokenExportCenterCard
 import com.example.ui.theme.JetBrainsMonoFamily
 import com.example.ui.theme.KromdeckAmber
 import com.example.ui.theme.KromdeckCoral
@@ -70,6 +72,15 @@ fun TokensScaleScreen(
     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
+    // 0. Active Theme Token Exporter (1-Tap JSON & XML + Compose/CSS/Tailwind/Flutter/SwiftUI)
+    item {
+      TokenExportCenterCard(
+        deck = deck,
+        initialFormat = ExportFormat.JSON_TOKENS,
+        onNotify = onNotify,
+      )
+    }
+
     // 1. Auto-Generated 50-950 Tonal Shade Ramps
     item {
       TactileCard(containerColor = KromdeckPureSurface, modifier = Modifier.fillMaxWidth()) {

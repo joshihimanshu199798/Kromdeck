@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.PresetDecks
 import com.example.data.ShortlistRepository
 import com.example.model.ColorBlindnessMode
+import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
 import com.example.model.DesignPatternSummary
 import com.example.model.DiscoverCategory
@@ -17,6 +18,7 @@ import com.example.model.GridDensity
 import com.example.model.KromdeckMode
 import com.example.model.MotionFeel
 import com.example.model.NavShellStyle
+import com.example.model.PaletteMoodFilter
 import com.example.model.PreviewTemplate
 import com.example.model.RandomizerLocks
 import com.example.model.StudioDrawerTab
@@ -27,6 +29,7 @@ import com.example.model.TournamentState
 import com.example.model.ViewportMode
 import com.example.model.WcagAudit
 import com.example.util.ColorUtils
+import com.example.util.ThemeAlchemyEngine
 import com.example.util.TournamentAnalytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +53,7 @@ data class KromdeckUiState(
   val discoverSearch: String = "",
   val discoverCategory: DiscoverCategory = DiscoverCategory.ALL,
   val discoverSurfaceFilter: String = "All",
+  val discoverPolarityFilter: String = "All",
   val discoverFlippedIds: Set<String> = emptySet(),
   // Studio Stage & Drawer State
   val viewportMode: ViewportMode = ViewportMode.MOBILE,
@@ -74,7 +78,7 @@ data class KromdeckUiState(
   // Extractor & Exports
   val extractedResult: ExtractedPaletteResult? = null,
   val isExtractingPalette: Boolean = false,
-  val selectedExportFormat: ExportFormat = ExportFormat.AI_PROMPT,
+  val selectedExportFormat: ExportFormat = ExportFormat.JSON_TOKENS,
   val statusMessage: String? = null,
 ) {
   val canUndo: Boolean get() = undoStack.isNotEmpty()
@@ -195,6 +199,10 @@ class KromdeckViewModel(application: Application) : AndroidViewModel(application
 
   fun setDiscoverSurfaceFilter(filter: String) {
     _uiState.update { it.copy(discoverSurfaceFilter = filter) }
+  }
+
+  fun setDiscoverPolarityFilter(polarity: String) {
+    _uiState.update { it.copy(discoverPolarityFilter = polarity) }
   }
 
   fun toggleDiscoverCardFlip(deckId: String) {
@@ -356,6 +364,43 @@ class KromdeckViewModel(application: Application) : AndroidViewModel(application
   fun autoFixContrast() {
     mutateActiveDeck(status = "Auto-fixed contrast to WCAG AA") { deck ->
       deck.copy(palette = ColorUtils.autoFixContrast(deck.palette))
+    }
+  }
+
+  // --- Infinite Theme Lab (Harmony, DNA Blender, Global Grading, Moods, Rename) ---
+  fun renameActiveDeck(newName: String) {
+    val sanitized = newName.take(36)
+    _uiState.update { state ->
+      state.copy(activeDeck = state.activeDeck.copy(name = sanitized))
+    }
+  }
+
+  fun generateHarmonyTheme(seedHue: Float, rule: ColorHarmonyRule, isDark: Boolean) {
+    mutateActiveDeck { current ->
+      ThemeAlchemyEngine.generateFromHarmony(seedHue, rule, isDark, current)
+    }
+  }
+
+  fun applyBlendedTheme(deckA: ThemeDeck, deckB: ThemeDeck, fraction: Float) {
+    mutateActiveDeck(status = "Applied blended hybrid theme") {
+      ThemeAlchemyEngine.blendDecks(deckA, deckB, fraction)
+    }
+  }
+
+  fun applyGlobalColorGrade(hueShiftDeg: Float, saturationDelta: Float, temperatureDelta: Float) {
+    mutateActiveDeck(status = "Applied global color grade") { deck ->
+      val graded = ThemeAlchemyEngine.gradePalette(deck.palette, hueShiftDeg, saturationDelta, temperatureDelta)
+      deck.copy(
+        id = "graded_${System.currentTimeMillis() % 10000}",
+        palette = graded,
+        swatchIconRes = null,
+      )
+    }
+  }
+
+  fun applyMoodTransform(mood: PaletteMoodFilter) {
+    mutateActiveDeck(status = "Transformed theme with ${mood.label}") { deck ->
+      ThemeAlchemyEngine.applyMoodTransform(deck, mood)
     }
   }
 

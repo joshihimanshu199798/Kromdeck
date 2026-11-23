@@ -74,7 +74,7 @@ object KromdeckNavigationIcons {
         mode = KromdeckMode.DISCOVER,
         stepNumber = 1,
         navLabel = "Discover",
-        shortTagline = "Browse 15 live looks & extract palettes",
+        shortTagline = "Browse 27 live looks & extract palettes",
         subtitle = "Dribbble-style inspiration feed & Image Extractor",
         filledIcon = Icons.Filled.Explore,
         outlinedIcon = Icons.Outlined.Explore,
@@ -83,11 +83,11 @@ object KromdeckNavigationIcons {
         onAccentColor = Color.White,
         tintColor = KromdeckIndigoTint,
         summary =
-          "Explore 15 curated UI looks rendered with live interactive mini-screens. " +
-            "Filter by category or surface style, flip any card between Light and Dark, copy hex dots, or extract a theme from any photo.",
+          "Explore 27 curated UI looks rendered with live interactive mini-screens. " +
+            "Filter by Light/Dark mode, category, or surface style, flip any card's polarity, copy hex dots, or extract a theme from any photo.",
         keyFunctions =
           listOf(
-            "Instant Search & Filters" to "Filter by keyword, app category (Music, Gallery, SaaS, Social, E-Commerce, Minimal), or surface physics.",
+            "Instant Search & Polarity Filters" to "Filter all 27 themes by Light/Dark mode, keyword, app category, or surface physics.",
             "Per-Card Light / Dark Flip" to "Preview the auto-generated companion polarity directly on any feed card.",
             "1-Click Swatch Copy" to "Tap any circular color dot on a card to copy its #HEX value.",
             "Image-to-Theme Extractor" to "Upload a screenshot or pick sample artwork to derive balanced Light & Dark color presets.",
@@ -98,8 +98,8 @@ object KromdeckNavigationIcons {
         mode = KromdeckMode.STUDIO,
         stepNumber = 2,
         navLabel = "Studio",
-        shortTagline = "Multi-device stage & 6-tab token drawer",
-        subtitle = "Resizable preview frame + deep live customizer",
+        shortTagline = "Infinite Lab, morph blender & 7-tab drawer",
+        subtitle = "Resizable preview frame + infinite customization engine",
         filledIcon = Icons.Filled.DesignServices,
         outlinedIcon = Icons.Outlined.DesignServices,
         iconContentDescription = "Studio pillar design tools icon",
@@ -107,14 +107,14 @@ object KromdeckNavigationIcons {
         onAccentColor = Color.White,
         tintColor = KromdeckCreamCanvas,
         summary =
-          "Your primary design workbench. Switch Mobile, Tablet, or Desktop viewports, drag the frame handle to resize live, " +
-            "test 6 interactive templates, simulate color blindness, and tune every color, font, surface, layout, and motion token.",
+          "Your primary design workbench with infinite possibilities. Use the Infinite Lab to generate 360° color harmonies, " +
+            "morph-blend any 2 themes from 0–100%, grade hue/saturation/warmth globally, or apply 1-tap mood atmospheres.",
         keyFunctions =
           listOf(
+            "Infinite Lab (Harmonies, DNA Blender & Grading)" to "Generate 6 color-wheel harmonies from any hue, morph any 2 themes continuously, adjust global hue/saturation/temperature, or apply 6 mood transforms.",
             "Responsive Viewport & Resize Handle" to "Switch Mobile/Tablet/Desktop or drag the amber edge handle with live dp width readout.",
-            "6 Interactive App Templates" to "Interact with real tabs, playlists, lightboxes, SaaS filters, social likes, carts, and tasks.",
-            "Split Wipe & Vision Sim" to "Drag a wipe divider against any baseline preset and preview Protanopia, Deuteranopia, or Tritanopia.",
-            "6-Tab Drawer & Code Export" to "Edit Colors, Surface, Typography, Layout, Motion, and WCAG/Export (AI Prompt, CSS, Tailwind v4, Flutter, JSON, XML) + DataStore Persist.",
+            "6 Interactive App Templates & Vision Sim" to "Test live interactive apps with Split Wipe and Protanopia/Deuteranopia/Tritanopia filters.",
+            "8-Format Export & DataStore Persist" to "Export JSON, Android XML, Jetpack Compose, CSS, Tailwind v4, Flutter, SwiftUI, and AI Prompts.",
           ),
         ctaLabel = "Open Studio",
       ),
@@ -170,8 +170,8 @@ object KromdeckNavigationIcons {
         mode = KromdeckMode.TOKENS,
         stepNumber = 5,
         navLabel = "Tokens",
-        shortTagline = "50–950 ramps, type scale & WCAG matrix",
-        subtitle = "Derived design tokens & accessibility verification",
+        shortTagline = "Export JSON/XML, 50–950 ramps & WCAG",
+        subtitle = "1-tap JSON & XML export, scales & contrast matrix",
         filledIcon = Icons.Filled.Palette,
         outlinedIcon = Icons.Outlined.Palette,
         iconContentDescription = "Tokens pillar color palette icon",
@@ -179,13 +179,13 @@ object KromdeckNavigationIcons {
         onAccentColor = Color.White,
         tintColor = KromdeckEmeraldTint,
         summary =
-          "Automatically computes 50–950 tonal shade ramps, full typography specimens, spacing/radius scales, " +
-            "and a complete WCAG 2.1 contrast matrix for your active design system.",
+          "Export your active theme into JSON (W3C Design Tokens), Android XML, Compose, SwiftUI, CSS, Tailwind, or Flutter in one tap, " +
+            "and inspect 50–950 tonal ramps, typography specimens, spacing scales, and the WCAG 2.1 contrast matrix.",
         keyFunctions =
           listOf(
+            "1-Tap JSON & XML Export Center" to "Copy, save .json/.xml files, or share complete Light/Dark tokens, tonal ramps, spacing, and typography.",
             "50–950 Tonal Shade Ramps" to "Auto-generated 11-step ramps for Primary, Secondary, and Neutral tokens with 1-tap hex copy.",
-            "Typography Scale Specimen" to "Displays Display, H1, H2, H3, Body, Caption, and Mono sizes in your active font pairing.",
-            "Spacing & Radius Tokens" to "Shows density-scaled spacing (4dp–48dp) alongside sm/md/lg corner radii.",
+            "Typography, Spacing & Radius Scales" to "Displays live font hierarchy and density-scaled spacing (4dp–48dp) plus sm/md/lg corner radii.",
             "WCAG 2.1 Contrast Matrix" to "Audits Text, Muted, Primary, and Secondary against Canvas, Surface, and Elevated cards (AAA/AA/AA18/FAIL).",
           ),
         ctaLabel = "Open Tokens",

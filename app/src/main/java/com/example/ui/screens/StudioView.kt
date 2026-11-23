@@ -86,12 +86,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.PresetDecks
 import com.example.model.ColorBlindnessMode
+import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
 import com.example.model.ExportFormat
 import com.example.model.FontPairing
 import com.example.model.GridDensity
 import com.example.model.MotionFeel
 import com.example.model.NavShellStyle
+import com.example.model.PaletteMoodFilter
 import com.example.model.PreviewTemplate
 import com.example.model.StudioDrawerTab
 import com.example.model.SurfacePhysics
@@ -143,6 +145,11 @@ fun StudioView(
   onSwapAccents: () -> Unit,
   onAutoFixContrast: () -> Unit,
   onUpdateGradient: (Boolean, Float, Boolean) -> Unit,
+  onRenameDeck: (String) -> Unit,
+  onGenerateHarmony: (Float, ColorHarmonyRule, Boolean) -> Unit,
+  onBlendDecks: (ThemeDeck, ThemeDeck, Float) -> Unit,
+  onApplyGlobalGrade: (Float, Float, Float) -> Unit,
+  onApplyMoodTransform: (PaletteMoodFilter) -> Unit,
   onSelectPhysics: (SurfacePhysics) -> Unit,
   onUpdateSurfaceGeometry: (Int?, Int?, Float?, Float?, Float?) -> Unit,
   onSelectFontPairing: (FontPairing) -> Unit,
@@ -219,6 +226,11 @@ fun StudioView(
         onSwapAccents = onSwapAccents,
         onAutoFixContrast = onAutoFixContrast,
         onUpdateGradient = onUpdateGradient,
+        onRenameDeck = onRenameDeck,
+        onGenerateHarmony = onGenerateHarmony,
+        onBlendDecks = onBlendDecks,
+        onApplyGlobalGrade = onApplyGlobalGrade,
+        onApplyMoodTransform = onApplyMoodTransform,
         onSelectPhysics = onSelectPhysics,
         onUpdateSurfaceGeometry = onUpdateSurfaceGeometry,
         onSelectFontPairing = onSelectFontPairing,
@@ -601,7 +613,7 @@ fun StudioView(
             ) {
               Icon(Icons.Filled.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(6.dp))
-              Text("Open Customization Sidebar Drawer (6 Tabs)", fontWeight = FontWeight.ExtraBold)
+              Text("Open Customization Sidebar Drawer (7 Tabs)", fontWeight = FontWeight.ExtraBold)
             }
           }
         }
@@ -679,6 +691,11 @@ private fun StudioSidebarDrawer(
   onSwapAccents: () -> Unit,
   onAutoFixContrast: () -> Unit,
   onUpdateGradient: (Boolean, Float, Boolean) -> Unit,
+  onRenameDeck: (String) -> Unit,
+  onGenerateHarmony: (Float, ColorHarmonyRule, Boolean) -> Unit,
+  onBlendDecks: (ThemeDeck, ThemeDeck, Float) -> Unit,
+  onApplyGlobalGrade: (Float, Float, Float) -> Unit,
+  onApplyMoodTransform: (PaletteMoodFilter) -> Unit,
   onSelectPhysics: (SurfacePhysics) -> Unit,
   onUpdateSurfaceGeometry: (Int?, Int?, Float?, Float?, Float?) -> Unit,
   onSelectFontPairing: (FontPairing) -> Unit,
@@ -741,6 +758,11 @@ private fun StudioSidebarDrawer(
       onSwapAccents = onSwapAccents,
       onAutoFixContrast = onAutoFixContrast,
       onUpdateGradient = onUpdateGradient,
+      onRenameDeck = onRenameDeck,
+      onGenerateHarmony = onGenerateHarmony,
+      onBlendDecks = onBlendDecks,
+      onApplyGlobalGrade = onApplyGlobalGrade,
+      onApplyMoodTransform = onApplyMoodTransform,
       onSelectPhysics = onSelectPhysics,
       onUpdateSurfaceGeometry = onUpdateSurfaceGeometry,
       onSelectFontPairing = onSelectFontPairing,

@@ -15,12 +15,14 @@ object ExportGenerator {
 
   fun generate(deck: ThemeDeck, format: ExportFormat): String {
     return when (format) {
-      ExportFormat.AI_PROMPT -> generateAiPrompt(deck)
+      ExportFormat.JSON_TOKENS -> generateJsonTokens(deck)
+      ExportFormat.XML_TOKENS -> generateXmlTokens(deck)
+      ExportFormat.JETPACK_COMPOSE -> generateJetpackComposeTheme(deck)
       ExportFormat.CSS_TOKENS -> generateCssTokens(deck)
       ExportFormat.TAILWIND_V4 -> generateTailwindV4(deck)
       ExportFormat.FLUTTER_DART -> generateFlutterThemeData(deck)
-      ExportFormat.JSON_TOKENS -> generateJsonTokens(deck)
-      ExportFormat.XML_TOKENS -> generateXmlTokens(deck)
+      ExportFormat.SWIFTUI_THEME -> generateSwiftUiTheme(deck)
+      ExportFormat.AI_PROMPT -> generateAiPrompt(deck)
     }
   }
 
@@ -33,12 +35,14 @@ object ExportGenerator {
         .ifEmpty { "kromdeck_theme" }
     val suffix =
       when (format) {
-        ExportFormat.AI_PROMPT -> "ai_prompt"
+        ExportFormat.JSON_TOKENS -> "tokens"
+        ExportFormat.XML_TOKENS -> "theme_resources"
+        ExportFormat.JETPACK_COMPOSE -> "Theme"
         ExportFormat.CSS_TOKENS -> "theme"
         ExportFormat.TAILWIND_V4 -> "tailwind_v4"
         ExportFormat.FLUTTER_DART -> "theme_data"
-        ExportFormat.JSON_TOKENS -> "tokens"
-        ExportFormat.XML_TOKENS -> "colors"
+        ExportFormat.SWIFTUI_THEME -> "Theme"
+        ExportFormat.AI_PROMPT -> "ai_prompt"
       }
     return "${slug}_${suffix}.${format.fileExtension}"
   }
@@ -233,12 +237,22 @@ class KromdeckThemeData {
     val l = lightDeck.palette
     val d = darkDeck.palette
     val audit = ColorUtils.auditThemeContrast(deck.palette)
-    val ramp = ColorUtils.generateTonalRamp(deck.palette.primaryHex)
+    val primaryRamp = ColorUtils.generateTonalRamp(deck.palette.primaryHex)
+    val secondaryRamp = ColorUtils.generateTonalRamp(deck.palette.secondaryHex)
+    val neutralRamp = ColorUtils.generateTonalRamp(deck.palette.borderHex)
     val safeName = deck.name.replace("\"", "\\\"")
+    val mult = deck.gridDensity.spacingMultiplier
+    val base = deck.baseFontSizeSp.toInt()
 
-    val rampEntries =
-      ramp.joinToString(",\n") { s ->
+    fun formatRamp(shades: List<com.example.model.TonalShade>): String =
+      shades.joinToString(",\n") { s ->
         "      \"${s.step}\": { \"\$value\": \"${s.hex}\", \"\$type\": \"color\" }"
+      }
+
+    val spacingEntries =
+      listOf(4, 8, 12, 16, 24, 32, 48).joinToString(",\n") { unit ->
+        val scaled = (unit * mult).toInt().coerceAtLeast(2)
+        "    \"space-$unit\": { \"\$value\": \"${scaled}px\", \"\$type\": \"dimension\" }"
       }
 
     return """
@@ -249,7 +263,9 @@ class KromdeckThemeData {
     "activeMode": "${if (deck.isDark) "dark" else "light"}",
     "surfacePhysics": "${deck.physics.name}",
     "motionFeel": "${deck.motionFeel.name}",
+    "motionDurationMs": ${deck.motionFeel.durationMs},
     "navShell": "${deck.navShell.name}",
+    "gridDensity": "${deck.gridDensity.name}",
     "wcag": {
       "textOnBackgroundRatio": ${String.format(Locale.US, "%.2f", audit.worstRatio)},
       "primaryOnBackgroundRatio": ${String.format(Locale.US, "%.2f", audit.worstPrimaryRatio)},
@@ -258,7 +274,13 @@ class KromdeckThemeData {
   },
   "color": {
     "primaryScale": {
-$rampEntries
+${formatRamp(primaryRamp)}
+    },
+    "secondaryScale": {
+${formatRamp(secondaryRamp)}
+    },
+    "neutralScale": {
+${formatRamp(neutralRamp)}
     },
     "light": {
       "canvas": { "${"$"}value": "${l.canvasHex}", "${"$"}type": "color" },
@@ -288,12 +310,24 @@ $rampEntries
   "typography": {
     "displayFont": { "${"$"}value": "${deck.fontPairing.displayLabel}", "${"$"}type": "fontFamily" },
     "bodyFont": { "${"$"}value": "${deck.fontPairing.bodyLabel}", "${"$"}type": "fontFamily" },
-    "baseSize": { "${"$"}value": "${deck.baseFontSizeSp.toInt()}px", "${"$"}type": "dimension" }
+    "displaySize": { "${"$"}value": "${base + 14}px", "${"$"}type": "dimension" },
+    "h1Size": { "${"$"}value": "${base + 8}px", "${"$"}type": "dimension" },
+    "h2Size": { "${"$"}value": "${base + 4}px", "${"$"}type": "dimension" },
+    "baseSize": { "${"$"}value": "${base}px", "${"$"}type": "dimension" },
+    "captionSize": { "${"$"}value": "${(base - 2).coerceAtLeast(10)}px", "${"$"}type": "dimension" },
+    "letterSpacing": { "${"$"}value": "${String.format(Locale.US, "%.1f", deck.letterSpacingSp)}px", "${"$"}type": "dimension" },
+    "lineHeight": { "${"$"}value": ${String.format(Locale.US, "%.2f", deck.lineHeightMultiplier)}, "${"$"}type": "number" }
+  },
+  "spacing": {
+$spacingEntries
   },
   "surface": {
-    "radius": { "${"$"}value": "${deck.cornerRadiusDp}px", "${"$"}type": "dimension" },
+    "radiusSm": { "${"$"}value": "${(deck.cornerRadiusDp / 2).coerceAtLeast(2)}px", "${"$"}type": "dimension" },
+    "radiusMd": { "${"$"}value": "${deck.cornerRadiusDp}px", "${"$"}type": "dimension" },
+    "radiusLg": { "${"$"}value": "${(deck.cornerRadiusDp + 8).coerceAtMost(32)}px", "${"$"}type": "dimension" },
     "padding": { "${"$"}value": "${deck.cardPaddingDp}px", "${"$"}type": "dimension" },
-    "borderWidth": { "${"$"}value": "${deck.borderWidthDp}px", "${"$"}type": "dimension" },
+    "borderWidth": { "${"$"}value": "${String.format(Locale.US, "%.1f", deck.borderWidthDp)}px", "${"$"}type": "dimension" },
+    "shadowIntensity": { "${"$"}value": ${String.format(Locale.US, "%.2f", deck.shadowIntensity)}, "${"$"}type": "number" },
     "shadow": { "${"$"}value": "${shadowCss(deck, deck.palette.borderHex)}", "${"$"}type": "shadow" }
   }
 }
@@ -305,14 +339,30 @@ $rampEntries
     val darkDeck = if (deck.isDark) deck else ColorUtils.generateCompanionDeck(deck)
     val l = lightDeck.palette
     val d = darkDeck.palette
+    val primaryRamp = ColorUtils.generateTonalRamp(deck.palette.primaryHex)
+    val mult = deck.gridDensity.spacingMultiplier
     val escapedName =
       deck.name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    val rampXml =
+      primaryRamp.joinToString("\n") { s ->
+        "    <color name=\"kd_primary_${s.step}\">${s.hex}</color>"
+      }
+
+    val spacingXml =
+      listOf(4, 8, 12, 16, 24, 32, 48).joinToString("\n") { unit ->
+        val scaled = (unit * mult).toInt().coerceAtLeast(2)
+        "    <dimen name=\"kd_space_$unit\">${scaled}dp</dimen>"
+      }
 
     return """
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Kromdeck Design System Tokens: $escapedName -->
 <resources>
-    <!-- Light Mode Colors -->
+    <!-- Active Primary 50-950 Tonal Scale -->
+$rampXml
+
+    <!-- Light Mode Semantic Colors -->
     <color name="kd_light_canvas">${l.canvasHex}</color>
     <color name="kd_light_surface">${l.surfaceHex}</color>
     <color name="kd_light_elevated">${l.elevatedSurfaceHex}</color>
@@ -324,7 +374,7 @@ $rampEntries
     <color name="kd_light_warm">${l.warmHex}</color>
     <color name="kd_light_success">${l.successHex}</color>
 
-    <!-- Dark Companion Colors -->
+    <!-- Dark Companion Semantic Colors -->
     <color name="kd_dark_canvas">${d.canvasHex}</color>
     <color name="kd_dark_surface">${d.surfaceHex}</color>
     <color name="kd_dark_elevated">${d.elevatedSurfaceHex}</color>
@@ -336,15 +386,100 @@ $rampEntries
     <color name="kd_dark_warm">${d.warmHex}</color>
     <color name="kd_dark_success">${d.successHex}</color>
 
-    <!-- Surface & Typography Tokens -->
+    <!-- Spacing & Radius Dimensions -->
+$spacingXml
+    <dimen name="kd_radius_sm">${(deck.cornerRadiusDp / 2).coerceAtLeast(2)}dp</dimen>
     <dimen name="kd_card_corner_radius">${deck.cornerRadiusDp}dp</dimen>
+    <dimen name="kd_radius_lg">${(deck.cornerRadiusDp + 8).coerceAtMost(32)}dp</dimen>
     <dimen name="kd_card_padding">${deck.cardPaddingDp}dp</dimen>
-    <dimen name="kd_card_border_width">${deck.borderWidthDp.toInt()}dp</dimen>
+    <dimen name="kd_card_border_width">${String.format(Locale.US, "%.1f", deck.borderWidthDp)}dp</dimen>
+    <dimen name="kd_text_base">${deck.baseFontSizeSp.toInt()}sp</dimen>
+
+    <!-- Typography & Motion Metadata -->
+    <string name="kd_theme_name">$escapedName</string>
     <string name="kd_font_display">${deck.fontPairing.displayLabel}</string>
     <string name="kd_font_body">${deck.fontPairing.bodyLabel}</string>
     <string name="kd_surface_physics">${deck.physics.name}</string>
     <string name="kd_motion_feel">${deck.motionFeel.name}</string>
+    <integer name="kd_motion_duration_ms">${deck.motionFeel.durationMs}</integer>
 </resources>
+""".trim()
+  }
+
+  private fun generateJetpackComposeTheme(deck: ThemeDeck): String {
+    val lightDeck = if (deck.isDark) ColorUtils.generateCompanionDeck(deck) else deck
+    val darkDeck = if (deck.isDark) deck else ColorUtils.generateCompanionDeck(deck)
+    fun ktColor(hex: String) = "Color(0xFF${hex.removePrefix("#").uppercase()})"
+    val l = lightDeck.palette
+    val d = darkDeck.palette
+    return """
+// Jetpack Compose Material 3 Theme — ${deck.name}
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+
+val KromdeckLightScheme = lightColorScheme(
+  primary = ${ktColor(l.primaryHex)},
+  secondary = ${ktColor(l.secondaryHex)},
+  tertiary = ${ktColor(l.warmHex)},
+  background = ${ktColor(l.canvasHex)},
+  surface = ${ktColor(l.surfaceHex)},
+  surfaceVariant = ${ktColor(l.elevatedSurfaceHex)},
+  onBackground = ${ktColor(l.textPrimaryHex)},
+  onSurface = ${ktColor(l.textPrimaryHex)},
+  onSurfaceVariant = ${ktColor(l.textMutedHex)},
+  outline = ${ktColor(l.borderHex)},
+)
+
+val KromdeckDarkScheme = darkColorScheme(
+  primary = ${ktColor(d.primaryHex)},
+  secondary = ${ktColor(d.secondaryHex)},
+  tertiary = ${ktColor(d.warmHex)},
+  background = ${ktColor(d.canvasHex)},
+  surface = ${ktColor(d.surfaceHex)},
+  surfaceVariant = ${ktColor(d.elevatedSurfaceHex)},
+  onBackground = ${ktColor(d.textPrimaryHex)},
+  onSurface = ${ktColor(d.textPrimaryHex)},
+  onSurfaceVariant = ${ktColor(d.textMutedHex)},
+  outline = ${ktColor(d.borderHex)},
+)
+
+val KromdeckShapes = Shapes(
+  small = RoundedCornerShape(${(deck.cornerRadiusDp / 2).coerceAtLeast(2)}.dp),
+  medium = RoundedCornerShape(${deck.cornerRadiusDp}.dp),
+  large = RoundedCornerShape(${(deck.cornerRadiusDp + 8).coerceAtMost(32)}.dp),
+)
+""".trim()
+  }
+
+  private fun generateSwiftUiTheme(deck: ThemeDeck): String {
+    val p = deck.palette
+    fun swiftRgb(hex: String): String {
+      val c = ColorUtils.parseHexColor(hex)
+      return String.format(Locale.US, "Color(red: %.3f, green: %.3f, blue: %.3f)", c.red, c.green, c.blue)
+    }
+    return """
+// SwiftUI Design Tokens — ${deck.name}
+import SwiftUI
+
+public enum KromdeckTheme {
+  public static let canvas = ${swiftRgb(p.canvasHex)}
+  public static let surface = ${swiftRgb(p.surfaceHex)}
+  public static let elevated = ${swiftRgb(p.elevatedSurfaceHex)}
+  public static let border = ${swiftRgb(p.borderHex)}
+  public static let textPrimary = ${swiftRgb(p.textPrimaryHex)}
+  public static let textMuted = ${swiftRgb(p.textMutedHex)}
+  public static let primary = ${swiftRgb(p.primaryHex)}
+  public static let secondary = ${swiftRgb(p.secondaryHex)}
+  public static let warm = ${swiftRgb(p.warmHex)}
+  public static let success = ${swiftRgb(p.successHex)}
+  public static let cornerRadius: CGFloat = ${deck.cornerRadiusDp}
+  public static let cardPadding: CGFloat = ${deck.cardPaddingDp}
+  public static let borderWidth: CGFloat = ${String.format(Locale.US, "%.1f", deck.borderWidthDp)}
+}
 """.trim()
   }
 

@@ -94,11 +94,30 @@ enum class GridDensity(val label: String, val spacingMultiplier: Float) {
 
 enum class StudioDrawerTab(val label: String) {
   COLORS("Colors"),
+  MIXER_LAB("Infinite Lab"),
   SURFACE("Surface"),
   TYPOGRAPHY("Type"),
   LAYOUT("Layout"),
   MOTION("Motion"),
   WCAG_EXPORTS("WCAG & Export"),
+}
+
+enum class ColorHarmonyRule(val label: String, val description: String) {
+  COMPLEMENTARY("Complementary", "Bold 180° opposite accent punch"),
+  ANALOGOUS("Analogous", "Smooth neighboring hues (+32° / -32°)"),
+  TRIADIC("Triadic", "Balanced 120° color-wheel triad"),
+  SPLIT_COMPLEMENTARY("Split-Comp", "Refined +150° / +210° high-energy pair"),
+  TETRADIC("Tetradic", "Rich 90° four-point studio palette"),
+  MONOCHROMATIC("Monochrome", "Sculpted single-hue tonal elegance"),
+}
+
+enum class PaletteMoodFilter(val label: String, val subtitle: String) {
+  HIGH_CONTRAST_AAA("AAA Contrast", "Ultra-crisp 7:1+ accessible polarity"),
+  PASTEL_SOFT("Pastel Soft", "Airy low-chroma studio tints"),
+  NEON_CYBER("Neon Cyber", "Electric dark glow accents"),
+  WARM_PAPER("Warm Paper", "Editorial cream & sepia ink"),
+  AMOLED_PURE("True AMOLED", "0% pitch-black battery-saving dark"),
+  MUTED_EARTH("Muted Earth", "Desaturated organic clay & stone"),
 }
 
 enum class ColorRole(val label: String) {
@@ -120,12 +139,14 @@ enum class ExportFormat(
   val fileExtension: String,
   val mimeType: String,
 ) {
-  AI_PROMPT("AI Prompt", "Plain-English AI Builder restyling prompt", "txt", "text/plain"),
+  JSON_TOKENS("JSON Tokens", "W3C Design Tokens JSON (ramps, light & dark)", "json", "application/json"),
+  XML_TOKENS("Android XML", "Android colors.xml, dimens & theme resources", "xml", "application/xml"),
+  JETPACK_COMPOSE("Compose Kotlin", "Jetpack Compose Material 3 Theme.kt", "kt", "text/plain"),
   CSS_TOKENS("CSS :root", "CSS Custom Properties (:root & dark)", "css", "text/css"),
-  TAILWIND_V4("Tailwind v4", "Tailwind CSS v4 @theme config + wrapper", "css", "text/css"),
+  TAILWIND_V4("Tailwind v4", "Tailwind CSS v4 @theme config", "css", "text/css"),
   FLUTTER_DART("Flutter Dart", "Flutter ThemeData (Light + Dark)", "dart", "text/plain"),
-  JSON_TOKENS("Figma JSON", "W3C Design Tokens JSON (light & dark)", "json", "application/json"),
-  XML_TOKENS("Android XML", "Android colors.xml & theme resources", "xml", "application/xml"),
+  SWIFTUI_THEME("SwiftUI", "Apple SwiftUI Color & Theme extension", "swift", "text/plain"),
+  AI_PROMPT("AI Prompt", "Plain-English AI Builder restyling prompt", "txt", "text/plain"),
 }
 
 data class RandomizerLocks(

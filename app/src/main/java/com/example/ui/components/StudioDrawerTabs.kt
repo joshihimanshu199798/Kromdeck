@@ -54,14 +54,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
 import com.example.model.ExportFormat
 import com.example.model.FontPairing
 import com.example.model.GridDensity
 import com.example.model.MotionFeel
 import com.example.model.NavShellStyle
+import com.example.model.PaletteMoodFilter
 import com.example.model.StudioDrawerTab
 import com.example.model.SurfacePhysics
+import com.example.model.ThemeDeck
 import com.example.ui.theme.JetBrainsMonoFamily
 import com.example.ui.theme.KromdeckAmber
 import com.example.ui.theme.KromdeckCoral
@@ -90,6 +93,11 @@ fun StudioCustomizationDrawer(
   onSwapAccents: () -> Unit,
   onAutoFixContrast: () -> Unit,
   onUpdateGradient: (Boolean, Float, Boolean) -> Unit,
+  onRenameDeck: (String) -> Unit,
+  onGenerateHarmony: (Float, ColorHarmonyRule, Boolean) -> Unit,
+  onBlendDecks: (ThemeDeck, ThemeDeck, Float) -> Unit,
+  onApplyGlobalGrade: (Float, Float, Float) -> Unit,
+  onApplyMoodTransform: (PaletteMoodFilter) -> Unit,
   onSelectPhysics: (SurfacePhysics) -> Unit,
   onUpdateSurfaceGeometry: (Int?, Int?, Float?, Float?, Float?) -> Unit,
   onSelectFontPairing: (FontPairing) -> Unit,
@@ -133,6 +141,15 @@ fun StudioCustomizationDrawer(
             onSwapAccents = onSwapAccents,
             onAutoFixContrast = onAutoFixContrast,
             onUpdateGradient = onUpdateGradient,
+          )
+        StudioDrawerTab.MIXER_LAB ->
+          InfiniteThemeLabTab(
+            state = state,
+            onRenameDeck = onRenameDeck,
+            onGenerateHarmony = onGenerateHarmony,
+            onBlendDecks = onBlendDecks,
+            onApplyGlobalGrade = onApplyGlobalGrade,
+            onApplyMoodTransform = onApplyMoodTransform,
           )
         StudioDrawerTab.SURFACE ->
           SurfaceDrawerTab(

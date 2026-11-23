@@ -72,6 +72,7 @@ fun DiscoverScreen(
   onSearchChange: (String) -> Unit,
   onCategorySelect: (DiscoverCategory) -> Unit,
   onSurfaceFilterSelect: (String) -> Unit,
+  onPolarityFilterSelect: (String) -> Unit,
   onToggleCardFlip: (String) -> Unit,
   onToggleSave: (ThemeDeck) -> Unit,
   onOpenInStudio: (ThemeDeck) -> Unit,
@@ -81,9 +82,10 @@ fun DiscoverScreen(
 ) {
   val clipboard = LocalClipboardManager.current
   val surfaceFilters = listOf("All", "Flat", "Soft Shadow", "Glassmorphism", "Neo-Brutalist", "Outlined")
+  val polarityFilters = listOf("All", "Light", "Dark")
 
   val filteredDecks =
-    remember(state.discoverSearch, state.discoverCategory, state.discoverSurfaceFilter) {
+    remember(state.discoverSearch, state.discoverCategory, state.discoverSurfaceFilter, state.discoverPolarityFilter) {
       val query = state.discoverSearch.trim().lowercase()
       PresetDecks.all.filter { deck ->
         val matchesCategory =
@@ -91,13 +93,19 @@ fun DiscoverScreen(
         val matchesSurface =
           state.discoverSurfaceFilter == "All" ||
             deck.physics.filterTag.equals(state.discoverSurfaceFilter, ignoreCase = true)
+        val matchesPolarity =
+          when (state.discoverPolarityFilter) {
+            "Light" -> !deck.isDark
+            "Dark" -> deck.isDark
+            else -> true
+          }
         val matchesQuery =
           query.isEmpty() ||
             deck.name.lowercase().contains(query) ||
             deck.tagline.lowercase().contains(query) ||
             deck.physics.label.lowercase().contains(query) ||
             deck.fontPairing.label.lowercase().contains(query)
-        matchesCategory && matchesSurface && matchesQuery
+        matchesCategory && matchesSurface && matchesPolarity && matchesQuery
       }
     }
 
@@ -195,12 +203,38 @@ fun DiscoverScreen(
               }
             }
 
-            // Surface Style Filters
+            // Surface Style + Polarity Filters
             Row(
               modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
               horizontalArrangement = Arrangement.spacedBy(6.dp),
               verticalAlignment = Alignment.CenterVertically,
             ) {
+              Text(
+                text = "Mode:",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = KromdeckMutedInk,
+              )
+              polarityFilters.forEach { pol ->
+                val sel = state.discoverPolarityFilter == pol
+                Box(
+                  modifier =
+                    Modifier.testTag("discover_polarity_${pol.lowercase()}")
+                      .clip(RoundedCornerShape(999.dp))
+                      .background(if (sel) KromdeckCoral else KromdeckCreamCanvas)
+                      .border(1.5.dp, KromdeckSlateInk, RoundedCornerShape(999.dp))
+                      .clickable { onPolarityFilterSelect(pol) }
+                      .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                  Text(
+                    text = pol,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (sel) Color.White else KromdeckSlateInk,
+                  )
+                }
+              }
+              Spacer(modifier = Modifier.width(6.dp))
               Text(
                 text = "Surface:",
                 style = MaterialTheme.typography.labelMedium,
@@ -250,6 +284,7 @@ fun DiscoverScreen(
                   onSearchChange("")
                   onCategorySelect(DiscoverCategory.ALL)
                   onSurfaceFilterSelect("All")
+                  onPolarityFilterSelect("All")
                 },
                 containerColor = KromdeckIndigo,
                 contentColor = Color.White,

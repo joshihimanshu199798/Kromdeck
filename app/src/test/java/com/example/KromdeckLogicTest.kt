@@ -18,8 +18,9 @@ import kotlin.random.Random
 class KromdeckLogicTest {
 
   @Test
-  fun allFifteenPresetDecksPassWcagContrast() {
-    assertTrue("Expected at least 14 curated presets", PresetDecks.all.size >= 14)
+  fun allTwentySevenPresetDecksPassWcagContrast() {
+    assertTrue("Expected at least 27 curated presets", PresetDecks.all.size >= 27)
+    assertEquals(PresetDecks.all.size, PresetDecks.all.map { it.id }.distinct().size)
     PresetDecks.all.forEach { deck ->
       val audit = ColorUtils.auditThemeContrast(deck.palette)
       assertTrue(
@@ -119,10 +120,23 @@ class KromdeckLogicTest {
     val json = ExportGenerator.generate(deck, ExportFormat.JSON_TOKENS)
     assertTrue(json.contains("\"\$schema\""))
     assertTrue(json.contains("\"primaryScale\""))
+    assertTrue(json.contains("\"secondaryScale\""))
+    assertTrue(json.contains("\"neutralScale\""))
+    assertTrue(json.contains("\"spacing\""))
 
     val xml = ExportGenerator.generate(deck, ExportFormat.XML_TOKENS)
     assertTrue(xml.contains("<resources>"))
     assertTrue(xml.contains("<color name=\"kd_light_primary\">"))
+    assertTrue(xml.contains("<color name=\"kd_primary_500\">"))
+    assertTrue(xml.contains("<dimen name=\"kd_space_16\">"))
+
+    val compose = ExportGenerator.generate(deck, ExportFormat.JETPACK_COMPOSE)
+    assertTrue(compose.contains("KromdeckLightScheme"))
+    assertTrue(compose.contains("KromdeckDarkScheme"))
+
+    val swift = ExportGenerator.generate(deck, ExportFormat.SWIFTUI_THEME)
+    assertTrue(swift.contains("import SwiftUI"))
+    assertTrue(swift.contains("public enum KromdeckTheme"))
 
     val svg = ExportGenerator.generateSpecCardSvg(deck, "Kromdeck", "Tactile Studio")
     assertTrue(svg.contains("<svg"))
@@ -203,6 +217,39 @@ class KromdeckLogicTest {
       assertTrue(spec.iconContentDescription.isNotBlank())
       assertTrue(spec.keyFunctions.isNotEmpty())
       assertEquals(spec, com.example.ui.components.KromdeckNavigationIcons.forMode(spec.mode))
+    }
+  }
+
+  @Test
+  fun themeAlchemyHarmonyBlendingGradingAndMoodsPreserveWcagContrast() {
+    val base = PresetDecks.all.first()
+    val darkBase = PresetDecks.all[5]
+
+    // 1. All 6 Color Harmony Rules across Light & Dark
+    com.example.model.ColorHarmonyRule.entries.forEach { rule ->
+      listOf(false, true).forEach { isDark ->
+        val generated = com.example.util.ThemeAlchemyEngine.generateFromHarmony(215f, rule, isDark, base)
+        val audit = ColorUtils.auditThemeContrast(generated.palette)
+        assertTrue("Harmony $rule (dark=$isDark) failed text AA", audit.textPassesAA)
+        assertTrue("Harmony $rule (dark=$isDark) failed primary UI contrast", audit.primaryPassesUI)
+      }
+    }
+
+    // 2. Theme DNA Blender at 0%, 50%, 100%
+    assertEquals(base, com.example.util.ThemeAlchemyEngine.blendDecks(base, darkBase, 0f))
+    assertEquals(darkBase, com.example.util.ThemeAlchemyEngine.blendDecks(base, darkBase, 1f))
+    val midBlend = com.example.util.ThemeAlchemyEngine.blendDecks(base, darkBase, 0.5f)
+    assertTrue(ColorUtils.auditThemeContrast(midBlend.palette).passesAA)
+
+    // 3. Global Color Grading
+    val graded = com.example.util.ThemeAlchemyEngine.gradePalette(base.palette, 90f, 0.15f, 0.35f)
+    assertTrue(ColorUtils.auditThemeContrast(graded).passesAA)
+
+    // 4. All 6 Mood Atmosphere Transforms
+    com.example.model.PaletteMoodFilter.entries.forEach { mood ->
+      val transformed = com.example.util.ThemeAlchemyEngine.applyMoodTransform(base, mood)
+      val audit = ColorUtils.auditThemeContrast(transformed.palette)
+      assertTrue("Mood $mood failed WCAG AA", audit.passesAA)
     }
   }
 }

@@ -212,6 +212,7 @@ fun KromdeckApp(
                     onSearchChange = vm::setDiscoverSearch,
                     onCategorySelect = vm::setDiscoverCategory,
                     onSurfaceFilterSelect = vm::setDiscoverSurfaceFilter,
+                    onPolarityFilterSelect = vm::setDiscoverPolarityFilter,
                     onToggleCardFlip = vm::toggleDiscoverCardFlip,
                     onToggleSave = vm::toggleSaveDeck,
                     onOpenInStudio = { deck ->
@@ -246,6 +247,11 @@ fun KromdeckApp(
                     onSwapAccents = vm::swapAccents,
                     onAutoFixContrast = vm::autoFixContrast,
                     onUpdateGradient = vm::updateGradient,
+                    onRenameDeck = vm::renameActiveDeck,
+                    onGenerateHarmony = vm::generateHarmonyTheme,
+                    onBlendDecks = vm::applyBlendedTheme,
+                    onApplyGlobalGrade = vm::applyGlobalColorGrade,
+                    onApplyMoodTransform = vm::applyMoodTransform,
                     onSelectPhysics = vm::setPhysics,
                     onUpdateSurfaceGeometry = vm::updateSurfaceGeometry,
                     onSelectFontPairing = vm::setFontPairing,
@@ -319,6 +325,7 @@ fun KromdeckApp(
     HexColorPickerDialog(
       role = role,
       initialHex = state.activeDeck.palette.hexFor(role),
+      referenceBackgroundHex = state.activeDeck.palette.canvasHex,
       onDismiss = vm::closeColorPicker,
       onApply = { newHex ->
         vm.updateColorRole(role, newHex)
