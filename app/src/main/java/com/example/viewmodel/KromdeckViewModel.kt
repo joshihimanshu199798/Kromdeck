@@ -2,10 +2,13 @@ package com.example.viewmodel
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.PresetDecks
 import com.example.data.ShortlistRepository
+import com.example.model.AiPolarityPreference
+import com.example.model.AiThemeUiState
 import com.example.model.ColorBlindnessMode
 import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
@@ -28,16 +31,21 @@ import com.example.model.ThemeWinLossRecord
 import com.example.model.TournamentState
 import com.example.model.ViewportMode
 import com.example.model.WcagAudit
+import com.example.util.AiThemeGeneratorService
 import com.example.util.ColorUtils
 import com.example.util.ThemeAlchemyEngine
 import com.example.util.TournamentAnalytics
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private const val TAG = "KromdeckViewModel"
 
 data class KromdeckUiState(
   val activeMode: KromdeckMode = KromdeckMode.DISCOVER,
@@ -75,9 +83,12 @@ data class KromdeckUiState(
   val tournament: TournamentState = TournamentState(),
   val tournamentRecords: List<ThemeWinLossRecord> = emptyList(),
   val patternSummary: DesignPatternSummary = DesignPatternSummary(),
-  // Extractor & Exports
+  // Extractor, AI Theme Generator & Exports
   val extractedResult: ExtractedPaletteResult? = null,
   val isExtractingPalette: Boolean = false,
+  val aiPromptInput: String = "Nordic fintech banking app with glacial slate, warm copper accents & editorial serif headers",
+  val aiPolarityPreference: AiPolarityPreference = AiPolarityPreference.AUTO,
+  val aiThemeState: AiThemeUiState = AiThemeUiState.Idle,
   val selectedExportFormat: ExportFormat = ExportFormat.JSON_TOKENS,
   val statusMessage: String? = null,
 ) {
@@ -88,6 +99,7 @@ data class KromdeckUiState(
 class KromdeckViewModel(application: Application) : AndroidViewModel(application) {
 
   private val shortlistRepo = ShortlistRepository(application.applicationContext)
+  private val aiThemeService by lazy { AiThemeGeneratorService() }
 
   private val _uiState = MutableStateFlow(KromdeckUiState())
   val uiState: StateFlow<KromdeckUiState> = _uiState.asStateFlow()
@@ -684,6 +696,65 @@ class KromdeckViewModel(application: Application) : AndroidViewModel(application
         )
       }
     }
+  }
+
+  // --- AI Prompt-to-Theme Design Token Generator ---
+  fun setAiPromptInput(prompt: String) {
+    _uiState.update { it.copy(aiPromptInput = prompt) }
+  }
+
+  fun setAiPolarityPreference(preference: AiPolarityPreference) {
+    _uiState.update { it.copy(aiPolarityPreference = preference) }
+  }
+
+  fun generateAiThemeSuggestions() {
+    val prompt = _uiState.value.aiPromptInput.trim()
+    if (prompt.isBlank()) {
+      notifyMessage("Please enter a theme description prompt first.")
+      return
+    }
+    val polarity = _uiState.value.aiPolarityPreference
+    val baseDeck = _uiState.value.activeDeck
+
+    viewModelScope.launch {
+      _uiState.update { it.copy(aiThemeState = AiThemeUiState.Loading) }
+      try {
+        val suggestions =
+          aiThemeService.generateThemes(
+            userPrompt = prompt,
+            polarity = polarity,
+            baseDeck = baseDeck,
+          )
+        _uiState.update {
+          it.copy(
+            aiThemeState = AiThemeUiState.Success(prompt = prompt, suggestions = suggestions),
+            statusMessage = "AI generated ${suggestions.size} cohesive theme token systems",
+          )
+        }
+      } catch (e: TimeoutCancellationException) {
+        Log.e(TAG, "AI theme generation timed out", e)
+        _uiState.update {
+          it.copy(
+            aiThemeState =
+              AiThemeUiState.Error("AI theme generation timed out after 60 seconds. Please try again."),
+          )
+        }
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Log.e(TAG, "Failed to generate AI theme suggestions", e)
+        _uiState.update {
+          it.copy(
+            aiThemeState =
+              AiThemeUiState.Error(e.localizedMessage ?: "Failed to generate AI themes."),
+          )
+        }
+      }
+    }
+  }
+
+  fun applyAiSuggestedDeck(deck: ThemeDeck) {
+    mutateActiveDeck(status = "Applied AI theme \"${deck.name}\"") { deck }
   }
 
   fun setExportFormat(format: ExportFormat) {

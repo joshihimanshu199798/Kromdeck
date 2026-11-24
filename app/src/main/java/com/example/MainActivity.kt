@@ -66,6 +66,7 @@ import com.example.ui.theme.KromdeckMutedInk
 import com.example.ui.theme.KromdeckPureSurface
 import com.example.ui.theme.KromdeckSlateInk
 import com.example.ui.theme.KromdeckTheme
+import com.example.util.configureAppCheck
 import com.example.viewmodel.KromdeckViewModel
 import com.example.viewmodel.ThemeViewModel
 
@@ -77,6 +78,7 @@ private sealed interface ActiveScreen {
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    configureAppCheck(this, intent)
     enableEdgeToEdge()
     setContent {
       KromdeckTheme {
@@ -259,6 +261,11 @@ fun KromdeckApp(
                     onUpdateLayoutConfig = vm::updateLayoutConfig,
                     onSelectMotionFeel = vm::setMotionFeel,
                     onSelectExportFormat = vm::setExportFormat,
+                    onAiPromptChange = vm::setAiPromptInput,
+                    onAiPolarityChange = vm::setAiPolarityPreference,
+                    onGenerateAiThemes = vm::generateAiThemeSuggestions,
+                    onApplyAiSuggestion = vm::applyAiSuggestedDeck,
+                    onSaveAiSuggestion = vm::pinDeckToShortlist,
                     onNotify = vm::notifyMessage,
                   )
 
@@ -286,6 +293,11 @@ fun KromdeckApp(
                 KromdeckMode.TOKENS ->
                   TokensScaleScreen(
                     state = state,
+                    onAiPromptChange = vm::setAiPromptInput,
+                    onAiPolarityChange = vm::setAiPolarityPreference,
+                    onGenerateAiThemes = vm::generateAiThemeSuggestions,
+                    onApplyAiSuggestion = vm::applyAiSuggestedDeck,
+                    onSaveAiSuggestion = vm::pinDeckToShortlist,
                     onNotify = vm::notifyMessage,
                   )
 

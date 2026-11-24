@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag (leave blank to auto-generate v1.0.<run_number>)"
+        description: "Release tag (leave blank to auto-generate v1.1.<run_number>)"
         type: string
         required: false
         default: ""
@@ -96,7 +96,7 @@ jobs:
           elif [ -n "${{ inputs.release_tag }}" ]; then
             TAG="${{ inputs.release_tag }}"
           else
-            TAG="v1.0.${GITHUB_RUN_NUMBER}"
+            TAG="v1.1.${GITHUB_RUN_NUMBER}"
           fi
           echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
 
@@ -118,8 +118,14 @@ jobs:
           tag_name: ${{ steps.stage.outputs.release_tag }}
           name: Kromdeck ${{ steps.stage.outputs.release_tag }} (Release APK)
           body: |
-            Official **Release APK** build for **Kromdeck** (`com.aistudio.kromdeck.kxmpzq`).
+            Official **Release APK** build for **Kromdeck v1.1** (`com.aistudio.kromdeck.kxmpzq`).
 
+            ### What's New in v1.1
+            - **AI Design System & Token Generator**: Powered by Firebase AI Logic (`gemini-3.8-flash`), generates 3 cohesive color palettes, modular typography scales, and surface tokens from natural-language prompts.
+            - **Live UI Component Preview Frame**: Instantaneous preview on real buttons, input fields, search bars, switches, and typography specimens whenever theme tokens change.
+            - **Infinite Theme Lab & 8-Format Token Exporter**: 360° Color Harmony Studio, Theme DNA Blender, Global Color Grading, and 1-tap JSON, Android XML, Jetpack Compose, CSS, Tailwind v4, Flutter, SwiftUI, and AI Prompt exports.
+
+            ### Build Details
             - **Tag:** `${{ steps.stage.outputs.release_tag }}`
             - **Commit:** `${{ github.sha }}`
             - **Signing:** ${{ steps.build_release.outputs.signing_mode }}

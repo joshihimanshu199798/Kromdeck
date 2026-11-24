@@ -85,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.PresetDecks
+import com.example.model.AiPolarityPreference
 import com.example.model.ColorBlindnessMode
 import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
@@ -99,6 +100,7 @@ import com.example.model.StudioDrawerTab
 import com.example.model.SurfacePhysics
 import com.example.model.ThemeDeck
 import com.example.model.ViewportMode
+import com.example.ui.components.LiveComponentPreviewFrame
 import com.example.ui.components.LiveTemplatePreviewFrame
 import com.example.ui.components.StudioCustomizationDrawer
 import com.example.ui.components.TactileButton
@@ -157,6 +159,11 @@ fun StudioView(
   onUpdateLayoutConfig: (NavShellStyle?, GridDensity?, Float?) -> Unit,
   onSelectMotionFeel: (MotionFeel) -> Unit,
   onSelectExportFormat: (ExportFormat) -> Unit,
+  onAiPromptChange: (String) -> Unit,
+  onAiPolarityChange: (AiPolarityPreference) -> Unit,
+  onGenerateAiThemes: () -> Unit,
+  onApplyAiSuggestion: (ThemeDeck) -> Unit,
+  onSaveAiSuggestion: (ThemeDeck) -> Unit,
   onNotify: (String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -238,6 +245,11 @@ fun StudioView(
         onUpdateLayoutConfig = onUpdateLayoutConfig,
         onSelectMotionFeel = onSelectMotionFeel,
         onSelectExportFormat = onSelectExportFormat,
+        onAiPromptChange = onAiPromptChange,
+        onAiPolarityChange = onAiPolarityChange,
+        onGenerateAiThemes = onGenerateAiThemes,
+        onApplyAiSuggestion = onApplyAiSuggestion,
+        onSaveAiSuggestion = onSaveAiSuggestion,
         onNotify = onNotify,
       )
     }
@@ -601,6 +613,13 @@ fun StudioView(
           }
         }
 
+        // 3. Live UI Component Preview Frame (Buttons, Inputs, Switches & Typography Scale)
+        item {
+          LiveComponentPreviewFrame(
+            deck = deck,
+          )
+        }
+
         // Quick inline button to open Sidebar Drawer on compact screens
         if (!isExpandedLayout && !isSidebarOpen) {
           item {
@@ -613,7 +632,7 @@ fun StudioView(
             ) {
               Icon(Icons.Filled.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(6.dp))
-              Text("Open Customization Sidebar Drawer (7 Tabs)", fontWeight = FontWeight.ExtraBold)
+              Text("Open Customization & AI Drawer (8 Tabs)", fontWeight = FontWeight.ExtraBold)
             }
           }
         }
@@ -703,6 +722,11 @@ private fun StudioSidebarDrawer(
   onUpdateLayoutConfig: (NavShellStyle?, GridDensity?, Float?) -> Unit,
   onSelectMotionFeel: (MotionFeel) -> Unit,
   onSelectExportFormat: (ExportFormat) -> Unit,
+  onAiPromptChange: (String) -> Unit,
+  onAiPolarityChange: (AiPolarityPreference) -> Unit,
+  onGenerateAiThemes: () -> Unit,
+  onApplyAiSuggestion: (ThemeDeck) -> Unit,
+  onSaveAiSuggestion: (ThemeDeck) -> Unit,
   onNotify: (String) -> Unit,
 ) {
   Column(
@@ -770,6 +794,11 @@ private fun StudioSidebarDrawer(
       onUpdateLayoutConfig = onUpdateLayoutConfig,
       onSelectMotionFeel = onSelectMotionFeel,
       onSelectExportFormat = onSelectExportFormat,
+      onAiPromptChange = onAiPromptChange,
+      onAiPolarityChange = onAiPolarityChange,
+      onGenerateAiThemes = onGenerateAiThemes,
+      onApplyAiSuggestion = onApplyAiSuggestion,
+      onSaveAiSuggestion = onSaveAiSuggestion,
       onNotify = onNotify,
     )
   }

@@ -34,8 +34,12 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.AiPolarityPreference
 import com.example.model.ExportFormat
+import com.example.model.ThemeDeck
 import com.example.model.TonalShade
+import com.example.ui.components.AiThemeGeneratorCard
+import com.example.ui.components.LiveComponentPreviewFrame
 import com.example.ui.components.TactileCard
 import com.example.ui.components.TokenExportCenterCard
 import com.example.ui.theme.JetBrainsMonoFamily
@@ -55,6 +59,11 @@ import java.util.Locale
 @Composable
 fun TokensScaleScreen(
   state: KromdeckUiState,
+  onAiPromptChange: (String) -> Unit,
+  onAiPolarityChange: (AiPolarityPreference) -> Unit,
+  onGenerateAiThemes: () -> Unit,
+  onApplyAiSuggestion: (ThemeDeck) -> Unit,
+  onSaveAiSuggestion: (ThemeDeck) -> Unit,
   onNotify: (String) -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -72,7 +81,28 @@ fun TokensScaleScreen(
     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp),
   ) {
-    // 0. Active Theme Token Exporter (1-Tap JSON & XML + Compose/CSS/Tailwind/Flutter/SwiftUI)
+    // 0A. AI-Powered Prompt-to-Theme Design Token Generator
+    item {
+      AiThemeGeneratorCard(
+        prompt = state.aiPromptInput,
+        polarity = state.aiPolarityPreference,
+        aiState = state.aiThemeState,
+        onPromptChange = onAiPromptChange,
+        onPolarityChange = onAiPolarityChange,
+        onGenerate = onGenerateAiThemes,
+        onApplySuggestion = onApplyAiSuggestion,
+        onSaveSuggestion = onSaveAiSuggestion,
+      )
+    }
+
+    // 0B. Live UI Component Preview Frame (Buttons, Inputs, Switches & Typography Scale)
+    item {
+      LiveComponentPreviewFrame(
+        deck = deck,
+      )
+    }
+
+    // 0C. Active Theme Token Exporter (1-Tap JSON & XML + Compose/CSS/Tailwind/Flutter/SwiftUI)
     item {
       TokenExportCenterCard(
         deck = deck,

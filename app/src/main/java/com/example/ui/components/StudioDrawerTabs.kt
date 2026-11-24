@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.AiPolarityPreference
 import com.example.model.ColorHarmonyRule
 import com.example.model.ColorRole
 import com.example.model.ExportFormat
@@ -105,6 +106,11 @@ fun StudioCustomizationDrawer(
   onUpdateLayoutConfig: (NavShellStyle?, GridDensity?, Float?) -> Unit,
   onSelectMotionFeel: (MotionFeel) -> Unit,
   onSelectExportFormat: (ExportFormat) -> Unit,
+  onAiPromptChange: (String) -> Unit,
+  onAiPolarityChange: (AiPolarityPreference) -> Unit,
+  onGenerateAiThemes: () -> Unit,
+  onApplyAiSuggestion: (ThemeDeck) -> Unit,
+  onSaveAiSuggestion: (ThemeDeck) -> Unit,
   onNotify: (String) -> Unit,
 ) {
   TactileCard(
@@ -132,6 +138,17 @@ fun StudioCustomizationDrawer(
       }
 
       when (state.activeStudioTab) {
+        StudioDrawerTab.AI_GENERATOR ->
+          AiThemeGeneratorCard(
+            prompt = state.aiPromptInput,
+            polarity = state.aiPolarityPreference,
+            aiState = state.aiThemeState,
+            onPromptChange = onAiPromptChange,
+            onPolarityChange = onAiPolarityChange,
+            onGenerate = onGenerateAiThemes,
+            onApplySuggestion = onApplyAiSuggestion,
+            onSaveSuggestion = onSaveAiSuggestion,
+          )
         StudioDrawerTab.COLORS ->
           ColorsDrawerTab(
             state = state,
@@ -329,6 +346,12 @@ private fun ColorsDrawerTab(
         )
       }
     }
+
+    // Live UI Component Preview Frame for instant color token verification
+    LiveComponentPreviewFrame(
+      deck = deck,
+      compact = true,
+    )
   }
 }
 
@@ -479,6 +502,12 @@ private fun TypographyDrawerTab(
         onCheckedChange = { onUpdateTypographyScale(null, it, null, null) },
       )
     }
+
+    // Live UI Component Preview Frame for instant typography & scale token verification
+    LiveComponentPreviewFrame(
+      deck = deck,
+      compact = true,
+    )
   }
 }
 

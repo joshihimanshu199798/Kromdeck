@@ -252,4 +252,52 @@ class KromdeckLogicTest {
       assertTrue("Mood $mood failed WCAG AA", audit.passesAA)
     }
   }
+
+  @Test
+  fun aiThemeResponseParserBuildsCohesiveThemesAndTypographyScales() {
+    val sampleJson =
+      """
+      {
+        "themes": [
+          {
+            "themeName": "Nordic Glacier Bank",
+            "tagline": "Glacial slate with warm copper accents",
+            "designRationale": "High-contrast slate ink paired with Playfair Display and Inter.",
+            "isDark": false,
+            "canvasHex": "#F8FAFC",
+            "surfaceHex": "#FFFFFF",
+            "elevatedSurfaceHex": "#F1F5F9",
+            "borderHex": "#0F172A",
+            "textPrimaryHex": "#0F172A",
+            "textMutedHex": "#475569",
+            "primaryHex": "#B45309",
+            "secondaryHex": "#1D4ED8",
+            "warmHex": "#D97706",
+            "successHex": "#047857",
+            "fontPairing": "EDITORIAL_SERIF",
+            "baseFontSizeSp": 15.0,
+            "typeScaleRatio": 1.25,
+            "headingWeightBold": true,
+            "letterSpacingSp": 0.2,
+            "lineHeightMultiplier": 1.4,
+            "surfacePhysics": "ULTRA_THIN",
+            "cornerRadiusDp": 10,
+            "borderWidthDp": 1.5,
+            "motionFeel": "SILKY_SMOOTH"
+          }
+        ]
+      }
+      """.trimIndent()
+
+    val parsed = com.example.util.AiThemeResponseParser.parseThemesJson(sampleJson, PresetDecks.all.first())
+    assertEquals(1, parsed.size)
+    val first = parsed.first()
+    assertEquals("Nordic Glacier Bank", first.deck.name)
+    assertEquals("#B45309", first.deck.palette.primaryHex)
+    assertEquals(com.example.model.FontPairing.EDITORIAL_SERIF, first.deck.fontPairing)
+    assertEquals(com.example.model.SurfacePhysics.ULTRA_THIN, first.deck.physics)
+    assertEquals(15, first.scaleSpec.bodySp)
+    assertTrue(first.scaleSpec.displaySp > first.scaleSpec.h1Sp)
+    assertTrue(first.wcagAudit.passesAA)
+  }
 }

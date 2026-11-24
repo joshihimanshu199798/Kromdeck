@@ -93,6 +93,7 @@ enum class GridDensity(val label: String, val spacingMultiplier: Float) {
 }
 
 enum class StudioDrawerTab(val label: String) {
+  AI_GENERATOR("AI Prompt"),
   COLORS("Colors"),
   MIXER_LAB("Infinite Lab"),
   SURFACE("Surface"),
